@@ -82,7 +82,7 @@ export const otpEmailTemplate = (name, otp, text) => {
                         <tr>
                           <td align="center" class="esd-block-button es-p40t es-p40b es-p10r es-p10l">
                             <span class="es-button-border">
-                              ${otp}
+                              "${otp}"
                             </span>
                           </td>
                         </tr>

@@ -65,3 +65,63 @@ export const get = async (userId) => {
   if (!user) throw new ResponseError(404, "User is not found");
   return user;
 };
+
+export const emailVerifyOtp = async (userId) => {
+  const user = await prismaClient.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+  if (!user) throw new ResponseError(404, "User is not found");
+  if (user.isAccountVerified) {
+    throw new ResponseError(400, "User already verified");
+  }
+  const otp = Math.floor(100000 + Math.random() * 900000);
+  await prismaClient.user.update({
+    where: { id: user.id },
+    data: {
+      verifyOtp: otp,
+      verifyOtpExpireAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    },
+  });
+  return { otp, user };
+};
+
+export const verifyEmail = async (userId, otp) => {
+  if (!userId || !otp) {
+    throw new ResponseError(400, "Missing details!");
+  }
+  const user = await prismaClient.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+  if (!user) {
+    throw new ResponseError(404, "User not found");
+  }
+
+  if (user.verifyOtpExpireAt < Date.now()) {
+    throw new ResponseError(400, "OTP Expired");
+  }
+
+  if (user.verifyOtp !== Number(otp)) {
+    throw new ResponseError(400, "Invalid OTP");
+  }
+  const updateUser = await prismaClient.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      isAccountVerified: true,
+      verifyOtp: null,
+      verifyOtpExpireAt: null,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      isAccountVerified: true,
+    },
+  });
+  return { user: updateUser };
+};

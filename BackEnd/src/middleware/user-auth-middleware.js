@@ -7,12 +7,20 @@ const userAuth = async (req, res, next) => {
     if (!token) {
       throw new ResponseError(401, "Not authorized, Login again");
     }
-    const tokenDecode = jwt.verify(token, process.env.JWT_SECRET);
+
+    let tokenDecode;
+    try {
+      tokenDecode = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      throw new ResponseError(400, "Invalid token");
+    }
+
     if (tokenDecode.id) {
       req.body.userId = tokenDecode.id;
     } else {
       throw new ResponseError(401, "Not authorized, Login again");
     }
+
     next();
   } catch (error) {
     next(error);

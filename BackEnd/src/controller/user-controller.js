@@ -1,6 +1,16 @@
-import { welcomeEmailTemplate } from "../application/email-template.js";
+import {
+  otpEmailTemplate,
+  welcomeEmailTemplate,
+} from "../application/email-template.js";
 import transporter from "../application/nodemailer.js";
-import { get, login, logout, register } from "../services/user-services.js";
+import {
+  emailVerifyOtp,
+  get,
+  login,
+  logout,
+  register,
+  verifyEmail,
+} from "../services/user-services.js";
 
 const registerUserHandler = async (req, res, next) => {
   try {
@@ -74,9 +84,51 @@ const getUserHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+const sendVerifyOtp = async (req, res, next) => {
+  try {
+    const { userId } = req.body;
+    const { user, otp } = await emailVerifyOtp(userId);
+
+    const mailOption = {
+      from: process.env.SENDER_EMAIL,
+      to: user.email,
+      subject: `Account Verify OTP!`,
+      html: otpEmailTemplate(user.name, otp, "verify your email"),
+    };
+    await transporter.sendMail(mailOption);
+    res.status(200).json({
+      success: true,
+      message: "Verification OTP sent on email",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const verifyEmailHandler = async (req, res, next) => {
+  try {
+    const { userId, otp } = req.body;
+    const { user } = await verifyEmail(userId, otp);
+    res.status(200).json({
+      success: true,
+      message: "Email verified successfully",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        isAccountVerified: user.isAccountVerified,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 export default {
   register: registerUserHandler,
   login: loginUserHandler,
   logout: logoutUserHandler,
   get: getUserHandler,
+  verifyOtp: sendVerifyOtp,
+  emailVerify: verifyEmailHandler,
 };
