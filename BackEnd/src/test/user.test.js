@@ -20,4 +20,14 @@ describe("POST /api/users/register", () => {
     expect(result.body.user.email).toBe("test@gmail.com");
     expect(result.body.user.password).toBeUndefined();
   });
+
+  it("Should reject if request is not valid", async () => {
+    const result = await supertest(app).post("/api/users/register").send({
+      username: "",
+      name: "",
+      email: "",
+      password: "",
+    });
+    expect(result.status).toBe(400);
+  });
 });
