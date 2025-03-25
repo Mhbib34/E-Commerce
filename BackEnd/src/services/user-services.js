@@ -1,8 +1,12 @@
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../error/response-error.js";
-import { registerUserValidation } from "../validation/user-validation.js";
+import {
+  loginUserValidation,
+  registerUserValidation,
+} from "../validation/user-validation.js";
 import validate from "../validation/validation.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export const register = async (request) => {
   const user = validate(registerUserValidation, request);
@@ -21,4 +25,25 @@ export const register = async (request) => {
       name: true,
     },
   });
+};
+
+export const login = async (request) => {
+  const loginRequest = validate(loginUserValidation, request);
+  const user = await prismaClient.user.findUnique({
+    where: {
+      email: loginRequest.email,
+    },
+  });
+  if (!user) throw new ResponseError(404, "User is not found");
+  const isPasswordValid = await bcrypt.compare(
+    loginRequest.password,
+    user.password
+  );
+  if (!isPasswordValid)
+    throw new ResponseError(400, "Email or password is incorrect");
+
+  const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+    expiresIn: "1d",
+  });
+  return { user, token };
 };
