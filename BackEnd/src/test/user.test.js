@@ -81,3 +81,17 @@ describe("POST /api/users/login", () => {
     expect(result.status).toBe(400);
   });
 });
+
+describe("POST /api/users/logout", () => {
+  beforeEach(async () => {
+    await createTestUser();
+  });
+  afterEach(async () => {
+    await removeAllUser();
+  });
+  it("Should can logout user", async () => {
+    const result = await supertest(app).post("/api/users/logout");
+    expect(result.status).toBe(200);
+    expect(result.body.token).toBeUndefined();
+  });
+});

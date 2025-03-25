@@ -1,6 +1,6 @@
 import { welcomeEmailTemplate } from "../application/email-template.js";
 import transporter from "../application/nodemailer.js";
-import { login, register } from "../services/user-services.js";
+import { login, logout, register } from "../services/user-services.js";
 
 const registerUserHandler = async (req, res, next) => {
   try {
@@ -44,7 +44,20 @@ const loginUserHandler = async (req, res, next) => {
     next(error);
   }
 };
+export const logoutUserHandler = async (req, res, next) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    });
+    return res.status(200).json(logout());
+  } catch (error) {
+    next(error);
+  }
+};
 export default {
   register: registerUserHandler,
   login: loginUserHandler,
+  logout: logoutUserHandler,
 };

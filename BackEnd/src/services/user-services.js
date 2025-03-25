@@ -47,3 +47,7 @@ export const login = async (request) => {
   });
   return { user, token };
 };
+
+export const logout = () => {
+  return { success: true, message: "User logged out successfully" };
+};
