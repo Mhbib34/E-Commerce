@@ -42,12 +42,26 @@ export const login = async (request) => {
   if (!isPasswordValid)
     throw new ResponseError(400, "Email or password is incorrect");
 
-  const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: "1d",
-  });
+  const token = jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "1d",
+    }
+  );
   return { user, token };
 };
 
 export const logout = () => {
   return { success: true, message: "User logged out successfully" };
+};
+
+export const get = async (userId) => {
+  const user = await prismaClient.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+  if (!user) throw new ResponseError(404, "User is not found");
+  return user;
 };

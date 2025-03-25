@@ -1,6 +1,6 @@
 import { welcomeEmailTemplate } from "../application/email-template.js";
 import transporter from "../application/nodemailer.js";
-import { login, logout, register } from "../services/user-services.js";
+import { get, login, logout, register } from "../services/user-services.js";
 
 const registerUserHandler = async (req, res, next) => {
   try {
@@ -44,7 +44,7 @@ const loginUserHandler = async (req, res, next) => {
     next(error);
   }
 };
-export const logoutUserHandler = async (req, res, next) => {
+const logoutUserHandler = async (req, res, next) => {
   try {
     res.clearCookie("token", {
       httpOnly: true,
@@ -56,8 +56,27 @@ export const logoutUserHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+const getUserHandler = async (req, res, next) => {
+  try {
+    const { userId } = req.body;
+    const user = await get(userId);
+    return res.status(200).json({
+      success: true,
+      userData: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        isAccountVerified: user.isAccountVerified,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 export default {
   register: registerUserHandler,
   login: loginUserHandler,
   logout: logoutUserHandler,
+  get: getUserHandler,
 };
