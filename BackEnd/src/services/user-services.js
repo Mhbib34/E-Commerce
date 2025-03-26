@@ -20,6 +20,7 @@ export const register = async (request) => {
   return prismaClient.user.create({
     data: user,
     select: {
+      id: true,
       username: true,
       email: true,
       name: true,
@@ -34,7 +35,7 @@ export const login = async (request) => {
       email: loginRequest.email,
     },
   });
-  if (!user) throw new ResponseError(404, "User is not found");
+  if (!user) throw new ResponseError(404, "Email or password is incorrect");
   const isPasswordValid = await bcrypt.compare(
     loginRequest.password,
     user.password

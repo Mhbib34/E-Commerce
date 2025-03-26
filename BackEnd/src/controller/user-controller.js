@@ -24,7 +24,9 @@ const registerUserHandler = async (req, res, next) => {
       html: welcomeEmailTemplate(result.email, result.name),
     };
     await transporter.sendMail(mailOption);
-    res.status(200).json({
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
       user: result,
     });
   } catch (error) {
@@ -151,6 +153,11 @@ const resetPasswordHandler = async (req, res, next) => {
   try {
     const { email, otp, newPassword } = req.body;
     const { user } = await resetPassword(email, otp, newPassword);
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    });
     res.status(200).json({
       success: true,
       message: "Password has been reset successfully!",
