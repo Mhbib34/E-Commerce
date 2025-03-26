@@ -17,5 +17,11 @@ userRouter.post(
   userAuth,
   userController.emailVerify
 );
+userRouter.post("/api/users/send-reset-otp", userAuth, userController.resetOtp);
+userRouter.post(
+  "/api/users/reset-password",
+  userAuth,
+  userController.resetPassword
+);
 
 export default userRouter;

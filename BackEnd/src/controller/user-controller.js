@@ -9,6 +9,8 @@ import {
   login,
   logout,
   register,
+  resetOtp,
+  resetPassword,
   verifyEmail,
 } from "../services/user-services.js";
 
@@ -73,7 +75,7 @@ const getUserHandler = async (req, res, next) => {
     const user = await get(userId);
     return res.status(200).json({
       success: true,
-      userData: {
+      user: {
         id: user.id,
         name: user.name,
         email: user.email,
@@ -124,6 +126,44 @@ const verifyEmailHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+const sendResetOtp = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const { user, otp } = await resetOtp(email);
+    const mailOption = {
+      from: process.env.SENDER_EMAIL,
+      to: user.email,
+      subject: `Account Verify OTP!`,
+      html: otpEmailTemplate(user.name, otp, "Password reset OTP"),
+    };
+    await transporter.sendMail(mailOption);
+    res.status(200).json({
+      success: true,
+      message: "Password reset OTP sent on email",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resetPasswordHandler = async (req, res, next) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    const { user } = await resetPassword(email, otp, newPassword);
+    res.status(200).json({
+      success: true,
+      message: "Password has been reset successfully!",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 export default {
   register: registerUserHandler,
   login: loginUserHandler,
@@ -131,4 +171,6 @@ export default {
   get: getUserHandler,
   verifyOtp: sendVerifyOtp,
   emailVerify: verifyEmailHandler,
+  resetOtp: sendResetOtp,
+  resetPassword: resetPasswordHandler,
 };

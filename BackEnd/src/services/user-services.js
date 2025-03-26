@@ -125,3 +125,57 @@ export const verifyEmail = async (userId, otp) => {
   });
   return { user: updateUser };
 };
+
+export const resetOtp = async (email) => {
+  if (!email) throw new ResponseError(400, "Email is required");
+  const user = await prismaClient.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) throw new ResponseError(404, "User is not found");
+  const otp = Math.floor(100000 + Math.random() * 900000);
+  await prismaClient.user.update({
+    where: { id: user.id },
+    data: {
+      resetOtp: otp,
+      resetOtpExpireAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    },
+  });
+  return { user, otp };
+};
+
+export const resetPassword = async (email, otp, newPassword) => {
+  if (!email || !otp || !newPassword)
+    throw new ResponseError(400, "Email, OTP and new password are required");
+
+  const user = await prismaClient.user.findUnique({
+    where: {
+      email,
+    },
+  });
+  if (!user) throw new ResponseError(404, "User is not found");
+
+  if (user.resetOtp === "" || user.resetOtp !== otp)
+    throw new ResponseError(400, "Invalid OTP");
+
+  if (user.resetOtpExpireAt < Date.now())
+    throw new ResponseError(400, "OTP expired!");
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  await prismaClient.user.update({
+    where: {
+      email,
+    },
+    data: {
+      password: hashedPassword,
+      resetOtp: null,
+      resetOtpExpireAt: null,
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  });
+  return { user };
+};
