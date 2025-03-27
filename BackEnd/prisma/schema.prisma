@@ -24,6 +24,58 @@ model User {
   isAccountVerified Boolean @default(false)
   resetOtp Int?
   resetOtpExpireAt DateTime?
-
+  orders Order[]
+  cartItem CartItem[]
   @@map("users")
  }
+
+
+model Products {
+  id Int @id @unique @default(autoincrement())
+  name String @db.VarChar(200)
+  description String @db.VarChar(500)
+  price Float
+  stock Int
+  categoryId Int
+  category Category @relation(fields: [categoryId], references: [id])
+  order OrderItem[]  
+  cartItem CartItem[]
+
+  @@map("products")
+}
+
+model Category {
+  id Int @id @unique @default(autoincrement())
+  name String @unique
+  products Products[]
+}
+
+model Order {
+  id Int @id @unique @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId],references: [id])
+  total Float
+  createdAt DateTime @default(now())
+  orderItems OrderItem[]
+
+@@map("order")
+}
+
+model OrderItem {
+  id Int @id @unique @default(autoincrement())
+  orderId Int
+  productId Int
+  quantity Int
+  price Float
+  order Order @relation(fields: [orderId],references: [id])
+  product Products @relation(fields: [productId],references: [id])
+}
+
+model CartItem {
+  id Int @id @unique @default(autoincrement())
+  userId Int
+  productId Int
+  quantity Int
+  user User @relation(fields: [userId],references: [id])
+  product Products @relation(fields: [productId],references: [id])
+}
