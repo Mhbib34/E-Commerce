@@ -15,7 +15,7 @@ describe("POST /api/users/register", () => {
       email: "test@gmail.com",
       password: "rahasia",
     });
-    expect(result.status).toBe(200);
+    expect(result.status).toBe(201);
     expect(result.body.user.username).toBe("test");
     expect(result.body.user.name).toBe("test");
     expect(result.body.user.email).toBe("test@gmail.com");
@@ -39,7 +39,7 @@ describe("POST /api/users/register", () => {
       password: "rahasia",
     });
 
-    expect(result.status).toBe(200);
+    expect(result.status).toBe(201);
     expect(result.body.user.username).toBe("test");
     expect(result.body.user.name).toBe("test");
     expect(result.body.user.email).toBe("test@gmail.com");
