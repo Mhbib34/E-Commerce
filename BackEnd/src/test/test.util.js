@@ -42,3 +42,15 @@ export const removeAllProducts = async () => {
     },
   });
 };
+
+export const createTestProduct = async () => {
+  await prismaClient.products.create({
+    data: {
+      name: "product test",
+      description: "product desc",
+      price: 111,
+      stock: 123,
+      categoryName: "category test",
+    },
+  });
+};

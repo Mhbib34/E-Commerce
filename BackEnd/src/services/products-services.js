@@ -1,6 +1,9 @@
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../error/response-error.js";
-import { createProductValidation } from "../validation/products-validation.js";
+import {
+  createProductValidation,
+  getProductValidation,
+} from "../validation/products-validation.js";
 import validate from "../validation/validation.js";
 
 export const create = async (request) => {
@@ -35,4 +38,19 @@ export const create = async (request) => {
     },
     include: { category: true },
   });
+};
+
+export const get = async (name) => {
+  name = validate(getProductValidation, name);
+  const product = await prismaClient.products.findFirst({
+    where: {
+      name: {
+        contains: name.toLowerCase(),
+      },
+    },
+  });
+
+  if (!product) throw new ResponseError(404, "Product not found");
+
+  return product;
 };
