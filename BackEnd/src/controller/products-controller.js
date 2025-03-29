@@ -1,4 +1,4 @@
-import { create, get } from "../services/products-services.js";
+import { create, get, update } from "../services/products-services.js";
 
 const createProductHandler = async (req, res, next) => {
   try {
@@ -27,7 +27,22 @@ const getProductHandler = async (req, res, next) => {
   }
 };
 
+const updateProductHandler = async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const result = await update(id, req.body);
+    res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+      product: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   create: createProductHandler,
   get: getProductHandler,
+  update: updateProductHandler,
 };

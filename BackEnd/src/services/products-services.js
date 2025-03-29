@@ -3,6 +3,7 @@ import { ResponseError } from "../error/response-error.js";
 import {
   createProductValidation,
   getProductValidation,
+  updateProductValidation,
 } from "../validation/products-validation.js";
 import validate from "../validation/validation.js";
 
@@ -53,4 +54,41 @@ export const get = async (name) => {
   if (!product) throw new ResponseError(404, "Product not found");
 
   return product;
+};
+
+export const update = async (id, request) => {
+  request = validate(updateProductValidation, request);
+  if (!id) throw new ResponseError(400, "Product ID is required");
+
+  let categoryId = undefined;
+  if (request.categoryName) {
+    const category = await prismaClient.category.findUnique({
+      where: { name: request.categoryName },
+    });
+
+    if (!category) throw new ResponseError(404, "Category not found");
+
+    categoryId = category.id;
+  }
+
+  delete request.categoryName;
+
+  Object.keys(request).forEach((key) => {
+    if (request[key] === "") {
+      delete request[key];
+    }
+  });
+
+  const updatedProduct = await prismaClient.products.update({
+    where: { id },
+    data: {
+      ...request,
+      ...(categoryId && { categoryId }),
+    },
+    include: {
+      category: true,
+    },
+  });
+
+  return updatedProduct;
 };

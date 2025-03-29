@@ -44,7 +44,7 @@ export const removeAllProducts = async () => {
 };
 
 export const createTestProduct = async () => {
-  await prismaClient.products.create({
+  const product = prismaClient.products.create({
     data: {
       name: "product test",
       description: "product desc",
@@ -53,4 +53,5 @@ export const createTestProduct = async () => {
       categoryName: "category test",
     },
   });
+  return product;
 };
